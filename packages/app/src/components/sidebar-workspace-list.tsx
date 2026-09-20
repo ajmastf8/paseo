@@ -86,7 +86,11 @@ import { ProjectLeadingVisual } from "@/components/sidebar/project-leading-visua
 import { useToast } from "@/contexts/toast-context";
 import { getForgePresentation, normalizeForge } from "@/git/forge";
 import { toWorktreeArchiveRisk } from "@/git/worktree-archive-warning";
-import { hasVisibleOrderChanged, mergeWithRemainder } from "@/utils/sidebar-reorder";
+import {
+  hasVisibleOrderChanged,
+  mergeVisibleReorderInPlace,
+  mergeWithRemainder,
+} from "@/utils/sidebar-reorder";
 import { confirmDialog } from "@/utils/confirm-dialog";
 import type { SidebarStateBucket } from "@/utils/sidebar-agent-state";
 import { SidebarStatusWorkspaceList } from "@/components/sidebar/sidebar-status-list";
@@ -2258,32 +2262,31 @@ function ProjectModeList({
   );
 
   const handleSectionProjectDragEnd = useCallback(
-    (sectionKey: string, reorderedProjects: SidebarProjectEntry[]) => {
+    (reorderedProjects: SidebarProjectEntry[]) => {
       if (!hostProjectSections) return;
-      const nextOrder = hostProjectSections.flatMap((section) =>
-        section.key === sectionKey
-          ? reorderedProjects.map((project) => project.viewKey)
-          : section.projects.map((project) => project.viewKey),
-      );
+      const reorderedProjectKeys = reorderedProjects.map((project) => project.viewKey);
       const currentOrder = getProjectOrder();
       if (
-        nextOrder.length === currentOrder.length &&
-        nextOrder.every((key, index) => currentOrder[index] === key)
+        !hasVisibleOrderChanged({
+          currentOrder,
+          reorderedVisibleKeys: reorderedProjectKeys,
+        })
       ) {
         return;
       }
-      setProjectOrder(nextOrder);
+      // A project spanning hosts has one slot in the global order, so merge the
+      // dragged section in place instead of rebuilding it from every section —
+      // the concatenation repeated those shared keys and the store dropped them,
+      // discarding the reorder.
+      setProjectOrder(
+        mergeVisibleReorderInPlace({
+          currentOrder,
+          reorderedVisibleKeys: reorderedProjectKeys,
+        }),
+      );
     },
     [getProjectOrder, hostProjectSections, setProjectOrder],
   );
-
-  const sectionProjectDragHandlers = useMemo(() => {
-    const handlers = new Map<string, (projects: SidebarProjectEntry[]) => void>();
-    for (const section of hostProjectSections ?? []) {
-      handlers.set(section.key, (reordered) => handleSectionProjectDragEnd(section.key, reordered));
-    }
-    return handlers;
-  }, [hostProjectSections, handleSectionProjectDragEnd]);
 
   const handleWorkspaceReorder = useCallback(
     (projectViewKey: string, reorderedWorkspaces: SidebarWorkspacePlacement[]) => {
@@ -2472,7 +2475,7 @@ function ProjectModeList({
                 data={section.projects}
                 keyExtractor={projectViewKeyExtractor}
                 renderItem={renderProject}
-                onDragEnd={sectionProjectDragHandlers.get(section.key) ?? handleProjectDragEnd}
+                onDragEnd={handleSectionProjectDragEnd}
                 extraData={activeWorkspaceSelectionKey(activeWorkspaceSelection)}
                 scrollEnabled={false}
                 useDragHandle
