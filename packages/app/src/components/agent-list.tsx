@@ -24,6 +24,7 @@ import { useArchiveAgent } from "@/hooks/use-archive-agent";
 import { HighlightedText } from "@/components/ui/highlighted-text";
 import { StatusBadge, type StatusBadgeVariant } from "@/components/ui/status-badge";
 import { findHighlightRanges } from "@/components/ui/highlighted-text-segments";
+import { SidebarHostSectionHeader } from "@/components/sidebar/sidebar-host-section-header";
 
 interface AgentListProps {
   agents: AggregatedAgent[];
@@ -50,6 +51,7 @@ const DATE_SECTION_ORDER = [
 
 type FlatListItem =
   | { type: "header"; key: string; section: DateSectionKey }
+  | { type: "host"; key: string; serverId: string; label: string }
   | { type: "agent"; key: string; agent: AggregatedAgent };
 
 function deriveDateSectionKey(lastActivityAt: Date): DateSectionKey {
@@ -413,30 +415,62 @@ export function AgentList({
   }, [actionAgent, actionClient, archiveAgent]);
 
   const flatItems = useMemo((): FlatListItem[] => {
-    const buckets = new Map<DateSectionKey, AggregatedAgent[]>();
-    for (const agent of agents) {
-      const section = deriveDateSectionKey(agent.lastActivityAt);
-      const existing = buckets.get(section) ?? [];
-      existing.push(agent);
-      buckets.set(section, existing);
+    const result: FlatListItem[] = [];
+
+    const appendDateSections = (subset: AggregatedAgent[]) => {
+      const buckets = new Map<DateSectionKey, AggregatedAgent[]>();
+      for (const agent of subset) {
+        const section = deriveDateSectionKey(agent.lastActivityAt);
+        const existing = buckets.get(section) ?? [];
+        existing.push(agent);
+        buckets.set(section, existing);
+      }
+      for (const section of DATE_SECTION_ORDER) {
+        const data = buckets.get(section);
+        if (!data || data.length === 0) {
+          continue;
+        }
+        result.push({ type: "header", key: `header:${section}`, section });
+        for (const agent of data) {
+          result.push({ type: "agent", key: `${agent.serverId}:${agent.id}`, agent });
+        }
+      }
+    };
+
+    if (!showHostColumn) {
+      appendDateSections(agents);
+      return result;
     }
 
-    const result: FlatListItem[] = [];
-    for (const section of DATE_SECTION_ORDER) {
-      const data = buckets.get(section);
-      if (!data || data.length === 0) {
-        continue;
-      }
-      result.push({ type: "header", key: `header:${section}`, section });
-      for (const agent of data) {
-        result.push({ type: "agent", key: `${agent.serverId}:${agent.id}`, agent });
-      }
+    // Across hosts, divide by server so "which machine is this agent on" reads
+    // off a header instead of a small column. Servers keep first-appearance
+    // order, and the caller already sorts agents newest-first.
+    const byServer = new Map<string, { label: string; agents: AggregatedAgent[] }>();
+    for (const agent of agents) {
+      const entry = byServer.get(agent.serverId) ?? {
+        label: agent.serverLabel ?? agent.serverId,
+        agents: [],
+      };
+      entry.agents.push(agent);
+      byServer.set(agent.serverId, entry);
+    }
+    for (const [serverId, entry] of byServer) {
+      result.push({ type: "host", key: `host:${serverId}`, serverId, label: entry.label });
+      appendDateSections(entry.agents);
     }
     return result;
-  }, [agents]);
+  }, [agents, showHostColumn]);
 
   const renderItem: ListRenderItem<FlatListItem> = useCallback(
     ({ item }) => {
+      if (item.type === "host") {
+        return (
+          <SidebarHostSectionHeader
+            label={item.label}
+            testID={`agent-list-host-${item.serverId}`}
+          />
+        );
+      }
       if (item.type === "header") {
         return (
           <View style={styles.sectionHeading}>

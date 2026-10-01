@@ -338,6 +338,9 @@ export const es: TranslationResources = {
       forkUnavailable: "Actualiza el host para usar esto.",
       forkMissingWorkspace: "Este agente no está en un espacio de trabajo.",
       forkFailed: "No se pudo bifurcar el chat",
+      continueInAnotherModel: "Continue in another model...",
+      continueInAnotherModelHint:
+        "Hands this conversation to a new agent where you pick another provider or model.",
       openFile: "Abrir archivo",
       copied: "Copiado",
     },

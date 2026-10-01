@@ -338,6 +338,9 @@ export const fr: TranslationResources = {
       forkUnavailable: "Mettez à jour l’hôte pour utiliser cette fonction.",
       forkMissingWorkspace: "Cet agent n’est dans aucun espace de travail.",
       forkFailed: "Impossible de forker la conversation",
+      continueInAnotherModel: "Continue in another model...",
+      continueInAnotherModelHint:
+        "Hands this conversation to a new agent where you pick another provider or model.",
       openFile: "Ouvrir le fichier",
       copied: "Copié",
     },

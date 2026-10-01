@@ -330,6 +330,9 @@ export const en = {
       forkUnavailable: "Update the host to use this.",
       forkMissingWorkspace: "This agent is not in a workspace.",
       forkFailed: "Failed to fork chat",
+      continueInAnotherModel: "Continue in another model...",
+      continueInAnotherModelHint:
+        "Hands this conversation to a new agent where you pick another provider or model.",
       openFile: "Open file",
       copied: "Copied",
     },

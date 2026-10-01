@@ -26,7 +26,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { useIsCompactFormFactor } from "@/constants/layout";
 import { useMutation } from "@tanstack/react-query";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { Check, ChevronDown, X } from "lucide-react-native";
+import { Check, ChevronDown, Shuffle, X } from "lucide-react-native";
 import { buildWorkspaceTabPersistenceKey } from "@/workspace-tabs/model";
 import { openExplorerSidebarView } from "@/workspace-tabs/explorer-sidebar";
 import {
@@ -104,6 +104,10 @@ import { isWeb } from "@/constants/platform";
 import type { Theme } from "@/styles/theme";
 import { recordRenderProfileReasons } from "@/utils/render-profiler";
 import { useRetainedPanelActive } from "@/components/retained-panel";
+import { useCommandCenterActions } from "@/command-center/provider";
+import { getCommandCenterIcon } from "@/command-center/icon";
+import type { CommandCenterContribution } from "@/command-center/contributions";
+import { clearCommandCenterFocusRestoreElement } from "@/utils/command-center-focus-restore";
 import { useStreamHistoryWindow } from "./use-stream-history-window";
 import { PluginTimelineItemView, useInstalledTimelineTransform } from "@/plugins/timeline";
 
@@ -535,6 +539,59 @@ const AgentStreamViewComponent = forwardRef<AgentStreamViewHandle, AgentStreamVi
     const effectiveStreamHead = useRetainedValue(streamHead, isActive);
     const effectiveTurnPresentation = useRetainedValue(turnPresentation, isActive);
     const isTurnActive = effectiveTurnPresentation.isActive;
+
+    // "Continue in another model" hands the whole conversation to a fresh agent
+    // in the same workspace, where the composer's provider/model selector picks
+    // the replacement model. A provider session is provider-bound, so this is
+    // the cross-provider path; for the same provider just switch the model.
+    const supportsAgentFork = useSessionStore(
+      (state) => state.sessions[resolvedServerId]?.serverInfo?.features?.agentForkContext === true,
+    );
+    const continueInAnotherModelActions = useMemo<CommandCenterContribution[]>(() => {
+      if (!supportsAgentFork || readOnly || !context.workspaceId) {
+        return [];
+      }
+      return [
+        {
+          id: "continue-in-another-model",
+          group: "actions",
+          groupRank: 0,
+          rank: 9,
+          keywords: [
+            "continue",
+            "another",
+            "model",
+            "provider",
+            "fork",
+            "handoff",
+            "switch",
+            "credits",
+          ],
+          visibility: "query",
+          run: async () => {
+            clearCommandCenterFocusRestoreElement();
+            await forkAgent({
+              agentId,
+              agent: context,
+              workspaceId: context.workspaceId,
+              target: "tab",
+            });
+          },
+          presentation: {
+            kind: "action",
+            title: t("message.actions.continueInAnotherModel"),
+            subtitle: t("message.actions.continueInAnotherModelHint"),
+            icon: getCommandCenterIcon(Shuffle),
+          },
+        },
+      ];
+    }, [agentId, context, forkAgent, readOnly, supportsAgentFork, t]);
+    useCommandCenterActions({
+      sourceId: "agent-continue-model",
+      enabled: isActive,
+      actions: continueInAnotherModelActions,
+    });
+
     const presentStream = useMemo(() => createStreamPresentation(), []);
     const presentation = useMemo(
       () =>
