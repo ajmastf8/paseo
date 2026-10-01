@@ -567,7 +567,7 @@ const AgentStreamViewComponent = forwardRef<AgentStreamViewHandle, AgentStreamVi
             "switch",
             "credits",
           ],
-          visibility: "query",
+          visibility: "always",
           run: async () => {
             clearCommandCenterFocusRestoreElement();
             await forkAgent({
@@ -587,7 +587,7 @@ const AgentStreamViewComponent = forwardRef<AgentStreamViewHandle, AgentStreamVi
       ];
     }, [agentId, context, forkAgent, readOnly, supportsAgentFork, t]);
     useCommandCenterActions({
-      sourceId: "agent-continue-model",
+      sourceId: `agent-continue-model:${resolvedServerId}:${agentId}`,
       enabled: isActive,
       actions: continueInAnotherModelActions,
     });
