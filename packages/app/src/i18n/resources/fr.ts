@@ -1367,6 +1367,17 @@ export const fr: TranslationResources = {
       startingRef: "Choisir le point de départ",
       launch: "Choisir quoi lancer",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
     refPicker: {
       startingRef: "Réf. de départ",
       intoBase: "vers {{baseRef}}",

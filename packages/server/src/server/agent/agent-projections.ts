@@ -34,6 +34,9 @@ interface ProjectionOptions {
 
 interface RecentProviderSessionProjectionOptions {
   providerLabel: string;
+  importedAgentId?: string;
+  importedWorkspaceId?: string;
+  importedArchived?: boolean;
 }
 
 function normalizeThinkingOptionId(value: string | null | undefined): string | null {
@@ -288,6 +291,11 @@ export function toRecentProviderSessionDescriptorPayload(
     firstPromptPreview: session.firstPromptPreview,
     lastPromptPreview: session.lastPromptPreview,
     lastActivityAt: session.lastActivityAt.toISOString(),
+    ...(options.importedAgentId ? { importedAgentId: options.importedAgentId } : {}),
+    ...(options.importedWorkspaceId ? { importedWorkspaceId: options.importedWorkspaceId } : {}),
+    ...(options.importedArchived !== undefined
+      ? { importedArchived: options.importedArchived }
+      : {}),
   };
 }
 

@@ -1346,6 +1346,17 @@ export const ko: TranslationResources = {
       startingRef: "시작 위치를 선택하세요",
       launch: "Choose what to launch",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
     refPicker: {
       startingRef: "시작 ref",
       intoBase: "{{baseRef}}(으)로",

@@ -96,6 +96,7 @@ import type { DaemonClient } from "@getpaseo/client/internal/daemon-client";
 import type { AgentProvider } from "@getpaseo/protocol/agent-types";
 import type { WorkspaceDraftTabSetup, WorkspaceTabTarget } from "@/workspace-tabs/model";
 import { isEmptyWorkspaceSubmission, runCreateEmptyWorkspace } from "./new-workspace-empty";
+import { NewWorkspaceSessionsSlot } from "./new-workspace/sessions-section";
 import {
   getWorkspaceNamingAttachments,
   remapDraftCwdToWorkspace,
@@ -2439,6 +2440,10 @@ export function NewWorkspaceScreen({
           title={t("newWorkspace.title")}
           formStack={formStack}
           onImportSession={importSession.open}
+          sessionsServerId={selectedServerId}
+          sessionsClient={client}
+          sessionsConnected={isConnected}
+          sessionsProjectDirectory={selectedSourceDirectory}
         >
           {composer}
           {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
@@ -2454,12 +2459,20 @@ function NewWorkspaceLayout({
   title,
   formStack,
   onImportSession,
+  sessionsServerId,
+  sessionsClient,
+  sessionsConnected,
+  sessionsProjectDirectory,
   children,
 }: {
   isCompact: boolean;
   title: string;
   formStack: ReactNode;
   onImportSession: () => void;
+  sessionsServerId: string;
+  sessionsClient: DaemonClient | null;
+  sessionsConnected: boolean;
+  sessionsProjectDirectory: string | null;
   children: ReactNode;
 }) {
   // At the top of the screen on compact layouts, under the composer otherwise.
@@ -2471,6 +2484,12 @@ function NewWorkspaceLayout({
         <Text style={styles.composerTitle}>{title}</Text>
       </View>
       {formStack}
+      <NewWorkspaceSessionsSlot
+        serverId={sessionsServerId}
+        client={sessionsClient}
+        isConnected={sessionsConnected}
+        projectDirectory={sessionsProjectDirectory}
+      />
     </>
   );
   return (

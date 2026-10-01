@@ -1364,6 +1364,17 @@ export const en = {
       promptPlaceholder: "Prompt {{name}}",
       commandPlaceholder: "Run a command, or leave empty for a blank terminal",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
   },
   desktop: {
     windowControls: {

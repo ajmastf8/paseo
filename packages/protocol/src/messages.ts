@@ -875,6 +875,12 @@ export const RecentProviderSessionDescriptorPayloadSchema = z.object({
   firstPromptPreview: z.string().nullable(),
   lastPromptPreview: z.string().nullable(),
   lastActivityAt: z.string(),
+  // COMPAT(importSessionStates): added in v0.9.0-beta.1. Present only when the
+  // request sets `includeImported`; an older daemon omits them and every row is
+  // treated as not-yet-imported.
+  importedAgentId: z.string().optional(),
+  importedWorkspaceId: z.string().optional(),
+  importedArchived: z.boolean().optional(),
 });
 
 export type RecentProviderSessionDescriptorPayload = z.infer<
@@ -1339,6 +1345,10 @@ export const FetchRecentProviderSessionsRequestMessageSchema = z.object({
   since: z.string().optional(),
   limit: z.number().int().positive().max(200).optional(),
   query: z.string().optional(),
+  // COMPAT(importSessionStates): added in v0.9.0-beta.1. When true the daemon
+  // keeps already-imported sessions in the list and stamps each entry with its
+  // imported state. Omitted by older clients, which keep the old filtering.
+  includeImported: z.boolean().optional(),
 });
 
 export const FetchAgentRequestMessageSchema = z.object({
@@ -3684,6 +3694,10 @@ export const ServerInfoStatusPayloadSchema = z
         importSessionWorkspaceTarget: z.boolean().optional(),
         // COMPAT(importSessionSearch): added in v0.8.0, remove gate after 2027-03-02.
         importSessionSearch: z.boolean().optional(),
+        // COMPAT(importSessionStates): added in v0.9.0-beta.1. Daemon stamps the
+        // imported state on listed provider sessions when `includeImported` is set,
+        // so clients can offer Open/Resume instead of a blind re-import.
+        importSessionStates: z.boolean().optional(),
         // COMPAT(forgeProviders): added in v0.2.0-beta.1. Drop the gate after
         // 2027-01-17 once the supported daemon floor is >= v0.2.0.
         // Daemon advertises pluggable non-GitHub forge support (the forge registry);

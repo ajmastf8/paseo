@@ -1375,6 +1375,17 @@ export const es: TranslationResources = {
       startingRef: "Elige por dónde empezar",
       launch: "Choose what to launch",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
     refPicker: {
       startingRef: "Árbitro inicial",
       intoBase: "en {{baseRef}}",

@@ -1328,6 +1328,17 @@ export const zhCN: TranslationResources = {
       startingRef: "选择起始位置",
       launch: "Choose what to launch",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
     refPicker: {
       startingRef: "起始 ref",
       intoBase: "进入 {{baseRef}}",

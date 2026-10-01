@@ -322,6 +322,62 @@ test("listImportableProviderSessions looks past already-imported rows to fill th
   expect(result.filteredAlreadyImportedCount).toBe(1);
 });
 
+test("listImportableProviderSessions stamps imported state when includeImported is set", async () => {
+  const cwd = "/tmp/project";
+  const sessions = [
+    makeImportableSession({
+      sessionId: "active-session",
+      cwd,
+      lastActivityAt: "2026-04-30T12:05:00.000Z",
+    }),
+    makeImportableSession({
+      sessionId: "archived-session",
+      cwd,
+      lastActivityAt: "2026-04-30T12:04:00.000Z",
+    }),
+  ];
+  const listImportableSessions = vi.fn(async () => makeImportableSessionsResult(sessions));
+
+  const result = await listImportableProviderSessions({
+    request: makeRequest({ cwd, providers: ["codex"], includeImported: true }),
+    agentManager: {
+      listAgents: () => [
+        makeManagedAgent({ id: "agent-active", cwd, sessionId: "active-session" }),
+      ],
+      listImportableSessions,
+    },
+    agentStorage: {
+      list: async () => [
+        {
+          id: "agent-archived",
+          provider: "codex",
+          cwd,
+          workspaceId: "wks_archived",
+          archivedAt: "2026-04-30T12:03:00.000Z",
+          persistence: { provider: "codex", sessionId: "archived-session" },
+          labels: {},
+        } as StoredAgentRecord,
+      ],
+    },
+    providerSnapshotManager: { getProviderLabel: () => "Codex" },
+  });
+
+  expect(result.entries).toEqual([
+    expect.objectContaining({
+      providerHandleId: "active-session",
+      importedAgentId: "agent-active",
+      importedArchived: false,
+    }),
+    expect.objectContaining({
+      providerHandleId: "archived-session",
+      importedAgentId: "agent-archived",
+      importedWorkspaceId: "wks_archived",
+      importedArchived: true,
+    }),
+  ]);
+  expect(result.filteredAlreadyImportedCount).toBe(0);
+});
+
 test("listImportableProviderSessions requests a bounded deep scan for search results", async () => {
   const matchingSessions = [
     makeImportableSession({
@@ -771,7 +827,7 @@ test("importProviderSession uses the provider import path with the requested lab
       providerHandleId: "thread-imported",
       cwd: "/tmp/imported-agent",
       workspaceId: "ws-restored",
-      labels: { source: "import" },
+      labels: { source: "import", "paseo.session-origin": "imported" },
     },
   ]);
   expect(result).toEqual({
@@ -823,7 +879,7 @@ test("importProviderSession restores an archived session as the same standalone 
   expect(await harness.storage.get(harness.snapshot.id)).toMatchObject({
     id: harness.snapshot.id,
     workspaceId: "ws-restored",
-    labels: { existing: "label", source: "reimport" },
+    labels: { existing: "label", source: "reimport", "paseo.session-origin": "imported" },
     archivedAt: null,
   });
   expect((await harness.storage.get(harness.snapshot.id))?.labels).not.toHaveProperty(

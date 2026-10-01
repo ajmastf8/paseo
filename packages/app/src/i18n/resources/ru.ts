@@ -1357,6 +1357,17 @@ export const ru: TranslationResources = {
       startingRef: "Выберите, с чего начать",
       launch: "Выберите, что запустить",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
     refPicker: {
       startingRef: "Исходная точка",
       intoBase: "в ветку {{baseRef}}",

@@ -18,7 +18,12 @@ import type {
   ImportAgentRequestMessageSchema,
   RecentProviderSessionDescriptorPayload,
 } from "@getpaseo/protocol/messages";
-import { getParentAgentIdFromLabels, PARENT_AGENT_ID_LABEL } from "@getpaseo/protocol/agent-labels";
+import {
+  getParentAgentIdFromLabels,
+  PARENT_AGENT_ID_LABEL,
+  SESSION_ORIGIN_IMPORTED,
+  SESSION_ORIGIN_LABEL,
+} from "@getpaseo/protocol/agent-labels";
 import { createRealpathAwarePathMatcher } from "../../utils/path.js";
 
 type ImportAgentRequestMessage = z.infer<typeof ImportAgentRequestMessageSchema>;
@@ -72,6 +77,17 @@ export interface ListImportableProviderSessionsResult {
   entries: RecentProviderSessionDescriptorPayload[];
   filteredAlreadyImportedCount: number;
   providerErrors: Array<{ provider: string; message: string }>;
+}
+
+/**
+ * What a listed provider session maps to in Paseo, or nothing when it has never
+ * been imported. `archived` distinguishes a row that needs a Resume (unarchive
+ * the same agent) from one that is already open.
+ */
+interface ImportedProviderSessionState {
+  agentId: string;
+  workspaceId: string | null;
+  archived: boolean;
 }
 
 export interface ImportProviderSessionInput {
@@ -128,9 +144,15 @@ export async function listImportableProviderSessions(
     agentStorage,
     providerFilter,
   );
-  const importedHandles = importedSessions.handles;
   const query = normalizeImportSessionQuery(request.query);
-  const listingLimit = query ? IMPORT_SESSION_SEARCH_SCAN_LIMIT : limit + importedSessions.count;
+  let listingLimit: number;
+  if (query) {
+    listingLimit = IMPORT_SESSION_SEARCH_SCAN_LIMIT;
+  } else if (request.includeImported) {
+    listingLimit = limit;
+  } else {
+    listingLimit = limit + importedSessions.count;
+  }
 
   const listing = await agentManager.listImportableSessions({
     limit: listingLimit,
@@ -140,7 +162,10 @@ export async function listImportableProviderSessions(
     cwd: request.cwd,
   });
   let filteredAlreadyImportedCount = 0;
-  const candidates: ManagedImportableProviderSession[] = [];
+  const candidates: Array<{
+    descriptor: ManagedImportableProviderSession;
+    importedState: ImportedProviderSessionState | null;
+  }> = [];
   const matchesRequestCwd = request.cwd ? createRealpathAwarePathMatcher(request.cwd) : null;
   for (const session of listing.sessions) {
     if (matchesRequestCwd && !matchesRequestCwd(session.cwd)) {
@@ -152,21 +177,38 @@ export async function listImportableProviderSessions(
     if (isMetadataGenerationSession(session)) {
       continue;
     }
-    if (
-      importedHandles.has(toProviderSessionHandleKey(session.provider, session.providerHandleId))
-    ) {
+    const importedState = findImportedProviderSessionState(
+      importedSessions.states,
+      session.provider,
+      session.providerHandleId,
+    );
+    // Only an active import hides a session by default; an archived one stays
+    // listed so the sheet can offer Resume. `includeImported` keeps both.
+    if (importedState && !importedState.archived && !request.includeImported) {
       filteredAlreadyImportedCount += 1;
       continue;
     }
-    candidates.push(session);
+    candidates.push({
+      descriptor: session,
+      importedState: request.includeImported ? importedState : null,
+    });
   }
 
   const entries = candidates
-    .sort((a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime())
+    .sort((a, b) => b.descriptor.lastActivityAt.getTime() - a.descriptor.lastActivityAt.getTime())
     .slice(0, limit)
-    .map((descriptor) =>
+    .map(({ descriptor, importedState }) =>
       toRecentProviderSessionDescriptorPayload(descriptor, {
         providerLabel: providerSnapshotManager.getProviderLabel(descriptor.provider),
+        ...(importedState
+          ? {
+              importedAgentId: importedState.agentId,
+              ...(importedState.workspaceId
+                ? { importedWorkspaceId: importedState.workspaceId }
+                : {}),
+              importedArchived: importedState.archived,
+            }
+          : {}),
       }),
     );
 
@@ -220,7 +262,10 @@ async function importProviderSessionNow(
       throw new Error(`Provider session cwd does not match import cwd: ${providerHandleId}`);
     }
     const requestedParentAgentId = getParentAgentIdFromLabels(input.request.labels);
-    const labelPatch: Record<string, string | null> = { ...input.request.labels };
+    const labelPatch: Record<string, string | null> = {
+      ...input.request.labels,
+      [SESSION_ORIGIN_LABEL]: SESSION_ORIGIN_IMPORTED,
+    };
     if (
       Object.hasOwn(archivedRecord.labels, PARENT_AGENT_ID_LABEL) ||
       Object.hasOwn(input.request.labels ?? {}, PARENT_AGENT_ID_LABEL)
@@ -229,7 +274,7 @@ async function importProviderSessionNow(
     }
     await unarchiveAgentState(input.agentStorage, input.agentManager, archivedRecord.id, {
       workspaceId,
-      labels: Object.keys(labelPatch).length > 0 ? labelPatch : undefined,
+      labels: labelPatch,
     });
     try {
       const snapshot = await ensureAgentLoaded(archivedRecord.id, {
@@ -252,7 +297,7 @@ async function importProviderSessionNow(
     providerHandleId,
     cwd,
     workspaceId,
-    labels,
+    labels: { ...labels, [SESSION_ORIGIN_LABEL]: SESSION_ORIGIN_IMPORTED },
   });
   await unarchiveAgentState(input.agentStorage, input.agentManager, snapshot.id);
 
@@ -344,8 +389,8 @@ async function collectImportedProviderSessions(
   agentManager: Pick<AgentManager, "listAgents">,
   agentStorage: Pick<AgentStorage, "list">,
   providerFilter: Set<string> | undefined,
-): Promise<{ handles: Set<string>; count: number }> {
-  const handles = new Set<string>();
+): Promise<{ states: Map<string, ImportedProviderSessionState>; count: number }> {
+  const states = new Map<string, ImportedProviderSessionState>();
   const sessions = new Set<string>();
   const records = await agentStorage.list();
   const storedRecordsById = new Map(records.map((record) => [record.id, record]));
@@ -353,27 +398,50 @@ async function collectImportedProviderSessions(
   const collect = (
     provider: AgentProvider | StoredAgentRecord["provider"] | string,
     persistence: AgentPersistenceHandle | null | undefined,
+    agentId: string,
+    workspaceId: string | null | undefined,
+    archived: boolean,
   ) => {
     if (!persistence || (providerFilter && !providerFilter.has(provider))) return;
-    sessions.add(toProviderSessionHandleKey(provider, persistence.sessionId));
-    collectProviderSessionHandleKeys(handles, provider, persistence);
+    if (!archived) {
+      sessions.add(toProviderSessionHandleKey(provider, persistence.sessionId));
+    }
+    for (const key of providerSessionHandleKeys(provider, persistence)) {
+      const existing = states.get(key);
+      // A live agent wins over its archived record for the same handle.
+      if (!existing || (existing.archived && !archived)) {
+        states.set(key, { agentId, workspaceId: workspaceId ?? null, archived });
+      }
+    }
   };
 
   for (const agent of agentManager.listAgents()) {
-    if (storedRecordsById.get(agent.id)?.archivedAt) {
+    const archived = Boolean(storedRecordsById.get(agent.id)?.archivedAt);
+    if (archived) {
       continue;
     }
-    collect(agent.provider, agent.persistence);
+    collect(agent.provider, agent.persistence, agent.id, agent.workspaceId, false);
   }
 
   for (const record of records) {
-    if (record.archivedAt) {
-      continue;
-    }
-    collect(record.provider, record.persistence);
+    collect(
+      record.provider,
+      record.persistence,
+      record.id,
+      record.workspaceId,
+      Boolean(record.archivedAt),
+    );
   }
 
-  return { handles, count: sessions.size };
+  return { states, count: sessions.size };
+}
+
+function findImportedProviderSessionState(
+  states: ReadonlyMap<string, ImportedProviderSessionState>,
+  provider: string,
+  providerHandleId: string,
+): ImportedProviderSessionState | null {
+  return states.get(toProviderSessionHandleKey(provider, providerHandleId)) ?? null;
 }
 
 function toProviderSessionHandleKey(provider: string, providerHandleId: string): string {
@@ -386,17 +454,16 @@ function isMetadataGenerationSession(input: { firstPromptPreview: string | null 
   );
 }
 
-function collectProviderSessionHandleKeys(
-  target: Set<string>,
+function providerSessionHandleKeys(
   provider: AgentProvider | StoredAgentRecord["provider"] | string,
   persistence: AgentPersistenceHandle | null | undefined,
-): void {
+): string[] {
   if (!persistence) {
-    return;
+    return [];
   }
-
-  target.add(toProviderSessionHandleKey(provider, persistence.sessionId));
+  const keys = [toProviderSessionHandleKey(provider, persistence.sessionId)];
   if (persistence.nativeHandle) {
-    target.add(toProviderSessionHandleKey(provider, persistence.nativeHandle));
+    keys.push(toProviderSessionHandleKey(provider, persistence.nativeHandle));
   }
+  return keys;
 }

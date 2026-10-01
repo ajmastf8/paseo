@@ -1353,6 +1353,17 @@ export const ja: TranslationResources = {
       startingRef: "開始点を選択",
       launch: "Choose what to launch",
     },
+    sessions: {
+      title: "Sessions on this host",
+      empty: "No sessions found on this host.",
+      scopeAll: "All sessions",
+      scopeProject: "This project only",
+      state: {
+        open: "Open",
+        resume: "Resume",
+        import: "Import",
+      },
+    },
     refPicker: {
       startingRef: "開始Ref",
       intoBase: "{{baseRef}}に",
