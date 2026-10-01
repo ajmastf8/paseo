@@ -173,4 +173,23 @@ describe("buildWorkspaceStructureProjects", () => {
       placementShapedKey,
     );
   });
+
+  test("keeps a workspace whose project descriptor has not arrived yet", () => {
+    const result = buildWorkspaceStructureProjects({
+      sessions: [
+        {
+          serverId: "host-b",
+          projects: [],
+          workspaces: [workspace("ws-orphan", "prj_remote", "/repos/remote")],
+        },
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].workspaceKeys).toEqual(["host-b:ws-orphan"]);
+    expect(result[0].hosts[0]).toMatchObject({
+      serverId: "host-b",
+      projectId: "prj_remote",
+    });
+  });
 });

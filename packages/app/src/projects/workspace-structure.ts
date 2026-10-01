@@ -80,9 +80,27 @@ export function buildWorkspaceStructureProjects(input: {
   }
 
   for (const session of input.sessions) {
+    const viewKeyByProjectId = getOrCreate(
+      viewKeyByServerProjectId,
+      session.serverId,
+      () => new Map(),
+    );
     for (const workspace of session.workspaces) {
-      const viewKey = viewKeyByServerProjectId.get(session.serverId)?.get(workspace.projectId);
-      if (!viewKey) continue;
+      let viewKey = viewKeyByProjectId.get(workspace.projectId);
+      if (!viewKey) {
+        // The workspace's project descriptor has not arrived for this host yet
+        // (a snapshot/delta race that is more likely on a remote host). Recover
+        // the project from the workspace's own fields so the workspace still
+        // appears on the rail instead of silently dropping.
+        viewKey = addProjectToView({
+          byProject,
+          keyCountsByServer,
+          allocatedViewKeys,
+          serverId: session.serverId,
+          project: projectDescriptorFromWorkspace(workspace),
+        });
+        viewKeyByProjectId.set(workspace.projectId, viewKey);
+      }
       byProject.get(viewKey)?.workspaces.push({
         workspaceId: workspace.id,
         workspaceName: workspace.name,
@@ -139,6 +157,18 @@ function allocatePlacementViewKey(
     allocatedViewKeys.add(collisionKey);
     return collisionKey;
   }
+}
+
+/** Reconstructs a project descriptor from a workspace when the real one is absent. */
+function projectDescriptorFromWorkspace(workspace: WorkspaceDescriptor): ProjectDescriptor {
+  return {
+    projectId: workspace.projectId,
+    projectKey: workspace.project?.projectKey ?? null,
+    projectDisplayName: workspace.projectDisplayName,
+    projectCustomName: null,
+    projectRootPath: workspace.projectRootPath,
+    projectKind: workspace.projectKind,
+  };
 }
 
 function addProjectToView(input: {
