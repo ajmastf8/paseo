@@ -1163,6 +1163,12 @@ export const ja: TranslationResources = {
       done: "完了",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "表示設定",
       heading: "表示",
       grouping: {

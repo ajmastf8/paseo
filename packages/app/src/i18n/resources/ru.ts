@@ -1167,6 +1167,12 @@ export const ru: TranslationResources = {
       done: "Готово",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "Настройки отображения",
       heading: "Отображение",
       grouping: {

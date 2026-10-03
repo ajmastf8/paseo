@@ -1150,6 +1150,12 @@ export const ar: TranslationResources = {
       done: "تم",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "تفضيلات العرض",
       heading: "العرض",
       grouping: {

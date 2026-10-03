@@ -36,7 +36,13 @@ function projectWithoutPinnedWorkspaces(
 
 function buildPinnedSidebarKeys(
   projects: SidebarProjectEntry[],
-  workspaceMaps: ReadonlyMap<string, ReadonlyMap<string, { pinnedAt?: string | null }>>,
+  workspaceMaps: ReadonlyMap<
+    string,
+    ReadonlyMap<
+      string,
+      { pinnedAt?: string | null; status?: string; statusEnteredAt?: Date | null }
+    >
+  >,
 ): PinnedSidebarKeys {
   const pinnedWorkspaceKeys: string[] = [];
   const pinnedAtByKey: Record<string, string> = {};
@@ -44,9 +50,16 @@ function buildPinnedSidebarKeys(
   for (const project of projects) {
     for (const placement of project.workspaces) {
       const workspace = workspaceMaps.get(placement.serverId)?.get(placement.workspaceId);
-      if (workspace?.pinnedAt) {
+      // A session awaiting input is pinned until it no longer is, so it surfaces in
+      // the Pinned section and leaves its project below (no duplicate row).
+      const awaitingPinnedAt =
+        workspace?.status === "needs_input"
+          ? (workspace.statusEnteredAt?.toISOString() ?? "awaiting")
+          : null;
+      const pinnedAt = workspace?.pinnedAt ?? awaitingPinnedAt;
+      if (pinnedAt) {
         pinnedWorkspaceKeys.push(placement.workspaceKey);
-        pinnedAtByKey[placement.workspaceKey] = workspace.pinnedAt;
+        pinnedAtByKey[placement.workspaceKey] = pinnedAt;
       }
     }
   }
@@ -91,7 +104,10 @@ export function usePinnedSidebarKeys(projects: SidebarProjectEntry[]): PinnedSid
   return useMemo(() => {
     const workspaceMapByServerId = new Map<
       string,
-      ReadonlyMap<string, { pinnedAt?: string | null }>
+      ReadonlyMap<
+        string,
+        { pinnedAt?: string | null; status?: string; statusEnteredAt?: Date | null }
+      >
     >();
     for (let index = 0; index < serverIds.length; index += 1) {
       const serverId = serverIds[index];

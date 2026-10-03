@@ -8,6 +8,7 @@ import {
   useSidebarViewStore,
   type SidebarGroupMode,
   type SidebarLabelFilter,
+  type SidebarRecentWindow,
 } from "@/stores/sidebar-view-store";
 import { DEFAULT_SIDEBAR_CHECKS_DISPLAY, type SidebarChecksDisplay } from "./checks-display";
 import { DEFAULT_SIDEBAR_ROW_ITEMS, type SidebarRowItem, type SidebarRowItems } from "./row-items";
@@ -37,6 +38,8 @@ export interface SidebarDisplayPreferences {
   labelFilter: SidebarLabelFilter;
   toggleLabelFilter: (name: string) => void;
   clearLabelFilter: () => void;
+  recentWindow: SidebarRecentWindow;
+  setRecentWindow: (window: SidebarRecentWindow) => void;
 }
 
 /**
@@ -59,6 +62,8 @@ export function useSidebarDisplayPreferences(): SidebarDisplayPreferences {
   const labelFilter = useSidebarViewStore((state) => state.labelFilter);
   const toggleLabelFilter = useSidebarViewStore((state) => state.toggleLabelFilter);
   const clearLabelFilter = useSidebarViewStore((state) => state.clearLabelFilter);
+  const recentWindow = useSidebarViewStore((state) => state.recentWindow);
+  const setRecentWindow = useSidebarViewStore((state) => state.setRecentWindow);
 
   const {
     settings: {
@@ -123,6 +128,8 @@ export function useSidebarDisplayPreferences(): SidebarDisplayPreferences {
       labelFilter,
       toggleLabelFilter,
       clearLabelFilter,
+      recentWindow,
+      setRecentWindow,
     }),
     [
       grouping,
@@ -144,6 +151,8 @@ export function useSidebarDisplayPreferences(): SidebarDisplayPreferences {
       labelFilter,
       toggleLabelFilter,
       clearLabelFilter,
+      recentWindow,
+      setRecentWindow,
     ],
   );
 }

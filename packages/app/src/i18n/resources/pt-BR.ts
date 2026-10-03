@@ -1176,6 +1176,12 @@ export const ptBR: TranslationResources = {
       done: "Concluído",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "Preferências de exibição",
       heading: "Exibição",
       grouping: {

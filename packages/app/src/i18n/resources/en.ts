@@ -1158,6 +1158,12 @@ export const en = {
       done: "Done",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "Display preferences",
       heading: "Display",
       grouping: {

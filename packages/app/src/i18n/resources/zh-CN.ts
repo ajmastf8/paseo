@@ -1142,6 +1142,12 @@ export const zhCN: TranslationResources = {
       done: "已完成",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "显示偏好",
       heading: "显示",
       grouping: {

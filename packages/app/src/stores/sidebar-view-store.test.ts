@@ -36,6 +36,7 @@ describe("sidebar view store", () => {
       hostFilters: [],
       projectFilters: [],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 
@@ -88,6 +89,7 @@ describe("sidebar view store", () => {
       hostFilters: [],
       projectFilters: [],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 
@@ -102,6 +104,7 @@ describe("sidebar view store", () => {
       hostFilters: ["host-a"],
       projectFilters: [],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 
@@ -116,6 +119,7 @@ describe("sidebar view store", () => {
       hostFilters: ["host-a", "host-b"],
       projectFilters: [],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 
@@ -132,6 +136,7 @@ describe("sidebar view store", () => {
       groupMode: "status",
       hostFilters: ["host-a"],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 
@@ -226,6 +231,7 @@ describe("sidebar view store", () => {
       hostFilters: ["host-a"],
       projectFilters: ["project-a", "project-b"],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 
@@ -235,6 +241,7 @@ describe("sidebar view store", () => {
       hostFilters: [],
       projectFilters: [],
       labelFilter: { labels: [] },
+      recentWindow: "any",
     });
   });
 

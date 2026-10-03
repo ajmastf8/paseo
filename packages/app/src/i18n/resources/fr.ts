@@ -1177,6 +1177,12 @@ export const fr: TranslationResources = {
       done: "Terminé",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "Préférences d’affichage",
       heading: "Affichage",
       grouping: {

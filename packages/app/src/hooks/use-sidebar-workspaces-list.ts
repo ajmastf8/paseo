@@ -7,7 +7,7 @@ import { workspaceEqualityFns } from "@/stores/session-store-hooks/selectors";
 import { useHostProjects } from "@/projects/host-projects";
 import { getHostRuntimeStore, useHostRegistryLoaded, useHosts } from "@/runtime/host-runtime";
 import { useSidebarOrderStore } from "@/stores/sidebar-order-store";
-import { useSidebarViewStore } from "@/stores/sidebar-view-store";
+import { useSidebarViewStore, type SidebarRecentWindow } from "@/stores/sidebar-view-store";
 import {
   buildSidebarWorkspacePlacementModel,
   computeSidebarOrderUpdates,
@@ -84,6 +84,66 @@ const EMPTY_PROJECTS: SidebarProjectEntry[] = [];
 const EMPTY_WORKSPACES: SidebarWorkspacePlacement[] = [];
 const EMPTY_PROJECT_NAMES = new Map<string, string>();
 
+interface RecentActivitySession {
+  workspaceAgentActivity?: ReadonlyMap<string, { enteredAt: Date | null }>;
+  workspaces?: ReadonlyMap<string, { statusEnteredAt: Date | null }>;
+}
+
+const EIGHT_HOURS_MS = 8 * 60 * 60 * 1000;
+
+/** Last-activity time per `serverId:workspaceId`, from agent activity then status entry. */
+function buildWorkspaceActivityMap(
+  sessions: Record<string, RecentActivitySession | undefined>,
+  serverIds: readonly string[],
+): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const serverId of serverIds) {
+    const session = sessions[serverId];
+    if (!session) continue;
+    for (const [workspaceId, activity] of session.workspaceAgentActivity ?? []) {
+      const at = activity.enteredAt?.getTime();
+      if (at !== undefined) map.set(`${serverId}:${workspaceId}`, at);
+    }
+    for (const [workspaceId, workspace] of session.workspaces ?? []) {
+      const key = `${serverId}:${workspaceId}`;
+      if (map.has(key)) continue;
+      const at = workspace.statusEnteredAt?.getTime();
+      if (at !== undefined) map.set(key, at);
+    }
+  }
+  return map;
+}
+
+function mapsEqual(left: Map<string, number>, right: Map<string, number>): boolean {
+  if (left.size !== right.size) return false;
+  for (const [key, value] of left) {
+    if (right.get(key) !== value) return false;
+  }
+  return true;
+}
+
+/** Drops workspaces with no activity in the window; unknown activity is kept. */
+function applyRecentWindow(
+  projects: ReturnType<typeof useHostProjects>,
+  window: SidebarRecentWindow,
+  activityAt: ReadonlyMap<string, number>,
+): ReturnType<typeof useHostProjects> {
+  if (window === "any") return projects;
+  const cutoff =
+    window === "today"
+      ? new Date(new Date().setHours(0, 0, 0, 0)).getTime()
+      : Date.now() - EIGHT_HOURS_MS;
+  return projects.map((project) => {
+    const workspaceKeys = project.workspaceKeys.filter((key) => {
+      const at = activityAt.get(key);
+      return at === undefined || at >= cutoff;
+    });
+    return workspaceKeys.length === project.workspaceKeys.length
+      ? project
+      : { ...project, workspaceKeys };
+  });
+}
+
 export interface SidebarWorkspacesListResult {
   workspacePlacements: SidebarWorkspacePlacement[];
   projects: SidebarProjectEntry[];
@@ -140,12 +200,23 @@ export function useSidebarWorkspacesList(options?: {
 
   const hostProjects = useHostProjects(directoryServerIds);
 
+  const recentWindow = useSidebarViewStore((state) => state.recentWindow);
+  const workspaceActivityAt = useStoreWithEqualityFn(
+    useSessionStore,
+    (state) => buildWorkspaceActivityMap(state.sessions, directoryServerIds),
+    mapsEqual,
+  );
+  const recentHostProjects = useMemo(
+    () => applyRecentWindow(hostProjects, recentWindow, workspaceActivityAt),
+    [hostProjects, recentWindow, workspaceActivityAt],
+  );
+
   const sidebarModel = useMemo(
     () =>
       buildSidebarWorkspacePlacementModel({
-        projects: hostProjects,
+        projects: recentHostProjects,
       }),
-    [hostProjects],
+    [recentHostProjects],
   );
 
   const projects = sidebarModel.projects.length > 0 ? sidebarModel.projects : EMPTY_PROJECTS;

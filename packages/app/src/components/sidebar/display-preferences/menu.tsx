@@ -49,6 +49,7 @@ import {
   hasActiveSidebarLabelFilter,
   SIDEBAR_UNLABELLED_LABEL_KEY,
   type SidebarGroupMode,
+  type SidebarRecentWindow,
 } from "@/stores/sidebar-view-store";
 import { workspaceLabelKey, type WorkspaceLabelColor } from "@getpaseo/protocol/workspace-labels";
 import type { WorkspaceTitleSource } from "@/hooks/use-settings";
@@ -240,6 +241,11 @@ export function SidebarDisplayPreferencesMenu(): ReactElement {
       },
     ];
 
+    definitions.push({
+      id: "recentWindow",
+      title: t("sidebar.display.recent.label"),
+      content: <RecentWindowPage preferences={preferences} />,
+    });
     if (showHostFilter) {
       definitions.push({
         id: "hostFilter",
@@ -317,6 +323,14 @@ export function SidebarDisplayPreferencesMenu(): ReactElement {
           </MenuSubTrigger>
           <MenuSubTrigger id="show" testID="sidebar-display-show">
             {t("sidebar.display.show.label")}
+          </MenuSubTrigger>
+          <MenuSeparator />
+          <MenuSubTrigger
+            id="recentWindow"
+            indicator={preferences.recentWindow !== "any"}
+            testID="sidebar-display-recent"
+          >
+            {t("sidebar.display.recent.label")}
           </MenuSubTrigger>
           {showHostFilter ? (
             <>
@@ -681,6 +695,52 @@ function ProjectFilterItem({
       closeOnSelect={false}
       onSelect={handleSelect}
       testID={`sidebar-project-filter-${viewKey}`}
+    >
+      {label}
+    </MenuItem>
+  );
+}
+
+function RecentWindowPage({ preferences }: { preferences: Preferences }): ReactElement {
+  const { t } = useTranslation();
+  const options: { id: SidebarRecentWindow; label: string }[] = [
+    { id: "any", label: t("sidebar.display.recent.any") },
+    { id: "today", label: t("sidebar.display.recent.today") },
+    { id: "last8h", label: t("sidebar.display.recent.last8h") },
+  ];
+  return (
+    <>
+      {options.map((option) => (
+        <RecentWindowItem
+          key={option.id}
+          id={option.id}
+          label={option.label}
+          selected={preferences.recentWindow === option.id}
+          onSelect={preferences.setRecentWindow}
+        />
+      ))}
+    </>
+  );
+}
+
+function RecentWindowItem({
+  id,
+  label,
+  selected,
+  onSelect,
+}: {
+  id: SidebarRecentWindow;
+  label: string;
+  selected: boolean;
+  onSelect: (window: SidebarRecentWindow) => void;
+}): ReactElement {
+  const handleSelect = useCallback(() => onSelect(id), [onSelect, id]);
+  return (
+    <MenuItem
+      selected={selected}
+      closeOnSelect={false}
+      onSelect={handleSelect}
+      testID={`sidebar-recent-${id}`}
     >
       {label}
     </MenuItem>

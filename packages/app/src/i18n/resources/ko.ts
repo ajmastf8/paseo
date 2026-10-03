@@ -1157,6 +1157,12 @@ export const ko: TranslationResources = {
       done: "완료",
     },
     display: {
+      recent: {
+        label: "Recent",
+        any: "Any time",
+        today: "Today",
+        last8h: "Last 8 hours",
+      },
       trigger: "표시 설정",
       heading: "표시",
       grouping: {
