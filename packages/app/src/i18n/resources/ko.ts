@@ -2235,6 +2235,7 @@ export const ko: TranslationResources = {
       thisDevice: "이 기기",
       connectedHosts: "연결된 호스트",
       hostsTransfer: {
+        emptyHint: "No hosts yet — import the list from your other machine with the buttons below.",
         hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
         export: "Export hosts",
         import: "Import hosts",

@@ -538,21 +538,22 @@ function ConnectedHostsSection({ clientVersion }: { clientVersion: string | null
       .catch(() => toast.error(t("settings.about.hostsTransfer.importError")));
   }, [importHosts, t, toast]);
 
-  if (hosts.length === 0) {
-    return null;
-  }
   return (
     <SettingsSection title={t("settings.about.connectedHosts")}>
-      <View style={settingsStyles.card}>
-        {hosts.map((host, index) => (
-          <HostVersionRow
-            key={host.serverId}
-            host={host}
-            showBorder={index > 0}
-            clientVersion={clientVersion}
-          />
-        ))}
-      </View>
+      {hosts.length > 0 ? (
+        <View style={settingsStyles.card}>
+          {hosts.map((host, index) => (
+            <HostVersionRow
+              key={host.serverId}
+              host={host}
+              showBorder={index > 0}
+              clientVersion={clientVersion}
+            />
+          ))}
+        </View>
+      ) : (
+        <Text style={settingsStyles.rowHint}>{t("settings.about.hostsTransfer.emptyHint")}</Text>
+      )}
       <Text style={settingsStyles.rowHint}>{t("settings.about.hostsTransfer.hint")}</Text>
       <View style={styles.hostTransferActions}>
         <Button variant="secondary" onPress={handleExport} testID="hosts-export">

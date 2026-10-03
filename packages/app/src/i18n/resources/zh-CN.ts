@@ -2199,6 +2199,7 @@ export const zhCN: TranslationResources = {
       thisDevice: "此设备",
       connectedHosts: "已连接的 Host",
       hostsTransfer: {
+        emptyHint: "No hosts yet — import the list from your other machine with the buttons below.",
         hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
         export: "Export hosts",
         import: "Import hosts",
