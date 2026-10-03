@@ -3,6 +3,7 @@ import { z } from "zod";
 export interface CollapsedProjectsState {
   collapsedProjectKeys: Set<string>;
   collapsedWorkspaceGroupKeys: Set<string>;
+  collapsedServerIds: Set<string>;
   collapsedPinned: boolean;
 }
 
@@ -10,6 +11,7 @@ export interface PersistedCollapsedProjects {
   collapsedProjectKeys?: string[];
   collapsedWorkspaceGroupKeys?: string[];
   collapsedStatusGroupKeys?: string[];
+  collapsedServerIds?: string[];
   collapsedPinned?: boolean;
 }
 
@@ -19,6 +21,7 @@ export const PersistedCollapsedProjectsSchema: z.ZodType<PersistedCollapsedProje
     collapsedWorkspaceGroupKeys: z.array(z.string()).optional(),
     // COMPAT(sidebarWorkspaceGroupCollapse): added in v0.4.0, remove after 2027-02-14.
     collapsedStatusGroupKeys: z.array(z.string()).optional(),
+    collapsedServerIds: z.array(z.string()).optional(),
     collapsedPinned: z.boolean().optional(),
   });
 
@@ -52,6 +55,19 @@ export function toggleWorkspaceGroupCollapsed(
   return { ...state, collapsedWorkspaceGroupKeys: next };
 }
 
+export function toggleServerCollapsed(
+  state: CollapsedProjectsState,
+  serverId: string,
+): CollapsedProjectsState {
+  const next = new Set(state.collapsedServerIds);
+  if (next.has(serverId)) {
+    next.delete(serverId);
+  } else {
+    next.add(serverId);
+  }
+  return { ...state, collapsedServerIds: next };
+}
+
 export function setProjectCollapsed(
   state: CollapsedProjectsState,
   projectKey: string,
@@ -69,11 +85,13 @@ export function setProjectCollapsed(
 export function serializeCollapsedProjects(state: CollapsedProjectsState): {
   collapsedProjectKeys: string[];
   collapsedWorkspaceGroupKeys: string[];
+  collapsedServerIds: string[];
   collapsedPinned: boolean;
 } {
   return {
     collapsedProjectKeys: Array.from(state.collapsedProjectKeys),
     collapsedWorkspaceGroupKeys: Array.from(state.collapsedWorkspaceGroupKeys),
+    collapsedServerIds: Array.from(state.collapsedServerIds),
     collapsedPinned: state.collapsedPinned,
   };
 }
@@ -96,9 +114,13 @@ export function mergePersistedCollapsedProjects<S extends CollapsedProjectsState
       Array.from(current.collapsedWorkspaceGroupKeys),
   );
   const restoredPinned = persisted.collapsedPinned ?? current.collapsedPinned;
+  const restoredServers = deserializeCollapsedKeys(
+    persisted.collapsedServerIds ?? Array.from(current.collapsedServerIds),
+  );
   if (
     areSetsEqual(current.collapsedProjectKeys, restoredProjects) &&
     areSetsEqual(current.collapsedWorkspaceGroupKeys, restoredWorkspaceGroups) &&
+    areSetsEqual(current.collapsedServerIds, restoredServers) &&
     current.collapsedPinned === restoredPinned
   ) {
     return current;
@@ -107,6 +129,7 @@ export function mergePersistedCollapsedProjects<S extends CollapsedProjectsState
     ...current,
     collapsedProjectKeys: restoredProjects,
     collapsedWorkspaceGroupKeys: restoredWorkspaceGroups,
+    collapsedServerIds: restoredServers,
     collapsedPinned: restoredPinned,
   };
 }

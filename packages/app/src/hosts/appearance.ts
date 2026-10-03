@@ -45,7 +45,10 @@ export function resolveHostBadgeDisplay(input: {
   if (input.localHostResolutionPending) {
     return null;
   }
-  return input.isLocalHost ? "hidden" : "name";
+  // Name every host by default, local included. The single-host case is already gated
+  // off upstream (a lone host's badge would only repeat the rail), so listing the local
+  // server costs nothing and answers "which machine is this on" once there are several.
+  return "name";
 }
 
 export interface HostBadgeModel {

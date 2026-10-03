@@ -155,6 +155,10 @@ export function SidebarStatusWorkspaceList({
   const collapsedWorkspaceGroupKeys = useSidebarCollapsedSectionsStore(
     (state) => state.collapsedWorkspaceGroupKeys,
   );
+  const collapsedServerIds = useSidebarCollapsedSectionsStore((state) => state.collapsedServerIds);
+  const toggleServerCollapsed = useSidebarCollapsedSectionsStore(
+    (state) => state.toggleServerCollapsed,
+  );
   const pinnedCollapsed = useSidebarCollapsedSectionsStore((state) => state.collapsedPinned);
   const togglePinnedCollapsed = useSidebarCollapsedSectionsStore(
     (state) => state.togglePinnedCollapsed,
@@ -219,18 +223,23 @@ export function SidebarStatusWorkspaceList({
               <SidebarHostSectionHeader
                 label={section.label}
                 testID={`sidebar-host-section-header-${section.key}`}
+                serverId={section.serverId}
+                collapsed={collapsedServerIds.has(section.serverId)}
+                onToggleServer={toggleServerCollapsed}
               />
-              <StatusGroupList
-                groups={section.workspaceGroups}
-                collapsedWorkspaceGroupKeys={collapsedWorkspaceGroupKeys}
-                projectIconByProjectViewKey={projectIconByProjectViewKey}
-                shortcutIndex={statusShortcutIndex}
-                showShortcutBadges={showShortcutBadges}
-                onWorkspacePress={onWorkspacePress}
-                hostBadgeByServerId={hostBadgeByServerId}
-                supportsPinningByServerId={supportsPinningByServerId}
-                onToggleWorkspacePin={onToggleWorkspacePin}
-              />
+              {collapsedServerIds.has(section.serverId) ? null : (
+                <StatusGroupList
+                  groups={section.workspaceGroups}
+                  collapsedWorkspaceGroupKeys={collapsedWorkspaceGroupKeys}
+                  projectIconByProjectViewKey={projectIconByProjectViewKey}
+                  shortcutIndex={statusShortcutIndex}
+                  showShortcutBadges={showShortcutBadges}
+                  onWorkspacePress={onWorkspacePress}
+                  hostBadgeByServerId={hostBadgeByServerId}
+                  supportsPinningByServerId={supportsPinningByServerId}
+                  onToggleWorkspacePin={onToggleWorkspacePin}
+                />
+              )}
             </View>
           ))}
       </>

@@ -35,10 +35,10 @@ describe("normalizeStoredHostAppearance", () => {
 });
 
 describe("resolveHostBadgeDisplay", () => {
-  it("hides the badge for the local host until the user chooses", () => {
+  it("names the local host too, like a remote, until the user chooses", () => {
     expect(
       resolveHostBadgeDisplay({ appearance: defaultHostAppearance(), isLocalHost: true }),
-    ).toBe("hidden");
+    ).toBe("name");
   });
 
   it("names a remote host until the user chooses", () => {
@@ -131,13 +131,13 @@ describe("selectHostBadges", () => {
     expect(badges.get("alpha")?.label).toBe("alpha");
   });
 
-  it("hides an untouched local host while its remote sibling shows", () => {
+  it("names the local host alongside its remote sibling", () => {
     const badges = selectHostBadges({
       hosts: [host("alpha", "Alpha"), host("beta", "Beta")],
       localServerId: "alpha",
       enabled: true,
     });
-    expect(badges.has("alpha")).toBe(false);
+    expect(badges.get("alpha")?.label).toBe("Alpha");
     expect(badges.get("beta")?.label).toBe("Beta");
   });
 

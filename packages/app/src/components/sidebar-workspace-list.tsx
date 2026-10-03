@@ -230,6 +230,8 @@ interface SidebarWorkspaceListProps {
   workspaceEntriesByKey: ReadonlyMap<string, SidebarWorkspaceEntry>;
   collapsedProjectKeys: ReadonlySet<string>;
   onToggleProjectCollapsed: (projectViewKey: string) => void;
+  collapsedServerIds: ReadonlySet<string>;
+  onToggleServerCollapsed: (serverId: string) => void;
   shortcutIndexByWorkspaceKey: Map<string, number>;
   groupMode: SidebarGroupMode;
   isRefreshing?: boolean;
@@ -1900,6 +1902,8 @@ export function SidebarWorkspaceList({
   workspaceEntriesByKey,
   collapsedProjectKeys,
   onToggleProjectCollapsed,
+  collapsedServerIds,
+  onToggleServerCollapsed,
   shortcutIndexByWorkspaceKey,
   groupMode,
   isRefreshing: _isRefreshing = false,
@@ -1999,6 +2003,8 @@ export function SidebarWorkspaceList({
         projectIconByProjectViewKey={projectIconByProjectViewKey}
         collapsedProjectKeys={collapsedProjectKeys}
         onToggleProjectCollapsed={onToggleProjectCollapsed}
+        collapsedServerIds={collapsedServerIds}
+        onToggleServerCollapsed={onToggleServerCollapsed}
         shortcutIndexByWorkspaceKey={shortcutIndexByWorkspaceKey}
         onWorkspacePress={onWorkspacePress}
         onAddProject={onAddProject}
@@ -2099,6 +2105,8 @@ function ProjectModeList({
   projectIconByProjectViewKey,
   collapsedProjectKeys,
   onToggleProjectCollapsed,
+  collapsedServerIds,
+  onToggleServerCollapsed,
   shortcutIndexByWorkspaceKey,
   onWorkspacePress,
   onAddProject,
@@ -2231,6 +2239,7 @@ function ProjectModeList({
             .filter((section) => section.projects.length > 0)
             .map((section) => ({
               key: section.key,
+              serverId: section.serverId,
               label: section.label,
               projects: section.projects,
             }))
@@ -2468,8 +2477,11 @@ function ProjectModeList({
             <SidebarHostSectionHeader
               label={section.label}
               testID={`sidebar-host-section-header-${section.key}`}
+              serverId={section.serverId}
+              collapsed={collapsedServerIds.has(section.serverId)}
+              onToggleServer={onToggleServerCollapsed}
             />
-            {section.projects.length > 0 ? (
+            {!collapsedServerIds.has(section.serverId) && section.projects.length > 0 ? (
               <DraggableList
                 testID={`sidebar-project-list-${section.key}`}
                 data={section.projects}

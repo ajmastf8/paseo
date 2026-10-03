@@ -85,6 +85,8 @@ interface SidebarSharedProps {
   collapsedProjectKeys: ReadonlySet<string>;
   shortcutIndexByWorkspaceKey: Map<string, number>;
   toggleProjectCollapsed: (projectViewKey: string) => void;
+  collapsedServerIds: ReadonlySet<string>;
+  toggleServerCollapsed: (serverId: string) => void;
   handleRefresh: () => void;
   handleOpenProject: () => void;
   handleImportSession: () => void;
@@ -136,6 +138,8 @@ export const LeftSidebar = memo(function LeftSidebar({ active }: { active: boole
     pinnedGroups,
     collapsedProjectKeys,
     toggleProjectCollapsed,
+    collapsedServerIds,
+    toggleServerCollapsed,
     groupMode,
     shortcutModel,
   } = useSidebarModel();
@@ -230,6 +234,8 @@ export const LeftSidebar = memo(function LeftSidebar({ active }: { active: boole
     collapsedProjectKeys,
     shortcutIndexByWorkspaceKey,
     toggleProjectCollapsed,
+    collapsedServerIds,
+    toggleServerCollapsed,
     handleRefresh,
     labels,
   };
@@ -530,6 +536,8 @@ function MobileSidebar({
   collapsedProjectKeys,
   shortcutIndexByWorkspaceKey,
   toggleProjectCollapsed,
+  collapsedServerIds,
+  toggleServerCollapsed,
   handleRefresh,
   handleOpenProject,
   handleImportSession,
@@ -596,6 +604,8 @@ function MobileSidebar({
           <SidebarWorkspaceList
             collapsedProjectKeys={collapsedProjectKeys}
             onToggleProjectCollapsed={toggleProjectCollapsed}
+            collapsedServerIds={collapsedServerIds}
+            onToggleServerCollapsed={toggleServerCollapsed}
             shortcutIndexByWorkspaceKey={shortcutIndexByWorkspaceKey}
             groupMode={groupMode}
             workspaceGroups={workspaceGroups}
@@ -648,6 +658,8 @@ function DesktopSidebar({
   collapsedProjectKeys,
   shortcutIndexByWorkspaceKey,
   toggleProjectCollapsed,
+  collapsedServerIds,
+  toggleServerCollapsed,
   handleRefresh,
   handleOpenProject,
   handleImportSession,
@@ -776,6 +788,8 @@ function DesktopSidebar({
           <SidebarWorkspaceList
             collapsedProjectKeys={collapsedProjectKeys}
             onToggleProjectCollapsed={toggleProjectCollapsed}
+            collapsedServerIds={collapsedServerIds}
+            onToggleServerCollapsed={toggleServerCollapsed}
             shortcutIndexByWorkspaceKey={shortcutIndexByWorkspaceKey}
             groupMode={groupMode}
             workspaceGroups={workspaceGroups}
