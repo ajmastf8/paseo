@@ -9,6 +9,7 @@ const FILE_NAME = "paseo-hosts.json";
 const FILE_FILTERS = [{ name: "Paseo hosts", extensions: ["json"] }];
 
 interface TransferredHost {
+  serverId?: string;
   label?: string;
   endpoint: string;
   useTls: boolean;
@@ -33,7 +34,7 @@ export type HostImportOutcome =
  */
 export function useHostTransfer() {
   const hosts = useHosts();
-  const { probeAndUpsertDirectConnection } = useHostMutations();
+  const { upsertDirectConnection, probeAndUpsertDirectConnection } = useHostMutations();
 
   const buildPayload = useCallback((): { json: string; count: number } => {
     const transferred: TransferredHost[] = [];
@@ -41,6 +42,7 @@ export function useHostTransfer() {
       for (const connection of host.connections) {
         if (connection.type !== "directTcp") continue;
         transferred.push({
+          serverId: host.serverId,
           label: host.label,
           endpoint: connection.endpoint,
           useTls: Boolean(connection.useTls),
@@ -82,12 +84,26 @@ export function useHostTransfer() {
       let failed = 0;
       for (const entry of parsed.hosts) {
         try {
-          await probeAndUpsertDirectConnection({
-            endpoint: entry.endpoint,
-            useTls: entry.useTls,
-            ...(entry.password ? { password: entry.password } : {}),
-            ...(entry.label ? { label: entry.label } : {}),
-          });
+          if (entry.serverId) {
+            // The source machine knew the daemon's id, so add the host under its
+            // real key now. Do not probe: an unreachable host (e.g. Tailscale is
+            // off) must still be imported so it works once it is reachable.
+            await upsertDirectConnection({
+              serverId: entry.serverId,
+              endpoint: entry.endpoint,
+              useTls: entry.useTls,
+              ...(entry.password ? { password: entry.password } : {}),
+              ...(entry.label ? { label: entry.label } : {}),
+            });
+          } else {
+            // Older exports have no serverId, so we must connect to learn it.
+            await probeAndUpsertDirectConnection({
+              endpoint: entry.endpoint,
+              useTls: entry.useTls,
+              ...(entry.password ? { password: entry.password } : {}),
+              ...(entry.label ? { label: entry.label } : {}),
+            });
+          }
           imported += 1;
         } catch {
           failed += 1;
@@ -95,7 +111,7 @@ export function useHostTransfer() {
       }
       return { imported, failed };
     },
-    [probeAndUpsertDirectConnection],
+    [probeAndUpsertDirectConnection, upsertDirectConnection],
   );
 
   const importHosts = useCallback(async (): Promise<HostImportOutcome> => {

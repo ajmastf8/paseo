@@ -2277,7 +2277,7 @@ export const es: TranslationResources = {
       connectedHosts: "Anfitriones conectados",
       hostsTransfer: {
         emptyHint: "No hosts yet — import the list from your other machine with the buttons below.",
-        hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
+        hint: "Moves this machine’s host list (endpoints and passwords) as a file, or through the clipboard on web. Imported hosts appear right away and connect once reachable.",
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
