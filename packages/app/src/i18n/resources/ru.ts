@@ -2260,6 +2260,15 @@ export const ru: TranslationResources = {
       whatsNewHint: "Заметки о выпуске для каждой версии",
       thisDevice: "Это устройство",
       connectedHosts: "Подключенные хосты",
+      hostsTransfer: {
+        hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
+        export: "Export hosts",
+        import: "Import hosts",
+        exported: "Copied {{count}} host(s) to the clipboard",
+        imported: "Imported {{count}} host(s)",
+        importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
+        importError: "Clipboard does not contain a Paseo hosts export",
+      },
       offline: "Оффлайн",
       versionDiffers: "Версия отличается от версии на этом устройстве",
       releaseChannel: {

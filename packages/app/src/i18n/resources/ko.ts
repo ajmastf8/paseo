@@ -2234,6 +2234,15 @@ export const ko: TranslationResources = {
       whatsNewHint: "모든 버전의 릴리스 노트",
       thisDevice: "이 기기",
       connectedHosts: "연결된 호스트",
+      hostsTransfer: {
+        hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
+        export: "Export hosts",
+        import: "Import hosts",
+        exported: "Copied {{count}} host(s) to the clipboard",
+        imported: "Imported {{count}} host(s)",
+        importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
+        importError: "Clipboard does not contain a Paseo hosts export",
+      },
       offline: "오프라인",
       versionDiffers: "이 기기와 버전이 다릅니다",
       releaseChannel: {

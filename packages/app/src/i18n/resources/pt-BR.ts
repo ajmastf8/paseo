@@ -2258,6 +2258,15 @@ export const ptBR: TranslationResources = {
       whatsNewHint: "Notas de versão de cada release",
       thisDevice: "Este dispositivo",
       connectedHosts: "Hosts conectados",
+      hostsTransfer: {
+        hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
+        export: "Export hosts",
+        import: "Import hosts",
+        exported: "Copied {{count}} host(s) to the clipboard",
+        imported: "Imported {{count}} host(s)",
+        importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
+        importError: "Clipboard does not contain a Paseo hosts export",
+      },
       offline: "Offline",
       versionDiffers: "A versão é diferente da deste dispositivo",
       releaseChannel: {

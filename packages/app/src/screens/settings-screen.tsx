@@ -79,6 +79,9 @@ import { PairLinkModal } from "@/components/pair-link-modal";
 import { KeyboardShortcutsSection } from "@/screens/settings/keyboard-shortcuts-section";
 import { EditorSection } from "@/screens/settings/editor-section";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/contexts/toast-context";
+import { toErrorMessage } from "@/utils/error-messages";
+import { useHostTransfer } from "@/screens/settings/use-host-transfer";
 import { Switch } from "@/components/ui/switch";
 import { CommunityLinks } from "@/components/community-links";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -510,7 +513,31 @@ function normalizeVersion(version: string | null | undefined): string | null {
 
 function ConnectedHostsSection({ clientVersion }: { clientVersion: string | null }) {
   const { t } = useTranslation();
+  const toast = useToast();
   const hosts = useHosts();
+  const { exportHosts, importHosts } = useHostTransfer();
+
+  const handleExport = useCallback(() => {
+    void exportHosts()
+      .then((count) => toast.copied(t("settings.about.hostsTransfer.exported", { count })))
+      .catch((error) => toast.error(toErrorMessage(error)));
+  }, [exportHosts, t, toast]);
+
+  const handleImport = useCallback(() => {
+    void importHosts()
+      .then((result) =>
+        toast.show(
+          result.failed > 0
+            ? t("settings.about.hostsTransfer.importPartial", {
+                imported: result.imported,
+                failed: result.failed,
+              })
+            : t("settings.about.hostsTransfer.imported", { count: result.imported }),
+        ),
+      )
+      .catch(() => toast.error(t("settings.about.hostsTransfer.importError")));
+  }, [importHosts, t, toast]);
+
   if (hosts.length === 0) {
     return null;
   }
@@ -525,6 +552,15 @@ function ConnectedHostsSection({ clientVersion }: { clientVersion: string | null
             clientVersion={clientVersion}
           />
         ))}
+      </View>
+      <Text style={settingsStyles.rowHint}>{t("settings.about.hostsTransfer.hint")}</Text>
+      <View style={styles.hostTransferActions}>
+        <Button variant="secondary" onPress={handleExport} testID="hosts-export">
+          {t("settings.about.hostsTransfer.export")}
+        </Button>
+        <Button variant="secondary" onPress={handleImport} testID="hosts-import">
+          {t("settings.about.hostsTransfer.import")}
+        </Button>
       </View>
     </SettingsSection>
   );
@@ -1496,6 +1532,11 @@ export default function SettingsScreen({ view, openAddHostIntent = null }: Setti
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create((theme) => ({
+  hostTransferActions: {
+    flexDirection: "row",
+    gap: theme.spacing[2],
+    marginTop: theme.spacing[2],
+  },
   loadingContainer: {
     flex: 1,
     backgroundColor: theme.colors.surface0,

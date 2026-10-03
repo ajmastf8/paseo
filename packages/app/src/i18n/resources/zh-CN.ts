@@ -2198,6 +2198,15 @@ export const zhCN: TranslationResources = {
       whatsNewHint: "每个版本的发布说明",
       thisDevice: "此设备",
       connectedHosts: "已连接的 Host",
+      hostsTransfer: {
+        hint: "Moves this machine’s host list (endpoints and passwords) through the clipboard. Import re-probes each host.",
+        export: "Export hosts",
+        import: "Import hosts",
+        exported: "Copied {{count}} host(s) to the clipboard",
+        imported: "Imported {{count}} host(s)",
+        importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
+        importError: "Clipboard does not contain a Paseo hosts export",
+      },
       offline: "离线",
       versionDiffers: "版本与此设备不同",
       releaseChannel: {
