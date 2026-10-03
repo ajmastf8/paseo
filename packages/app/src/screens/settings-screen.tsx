@@ -536,16 +536,21 @@ function ConnectedHostsSection({ clientVersion }: { clientVersion: string | null
   const handleImport = useCallback(() => {
     void (async () => {
       try {
+        toast.show(t("settings.about.hostsTransfer.importing"));
         const outcome = await importHosts();
         if (outcome.kind === "cancelled") return;
-        toast.show(
-          outcome.failed > 0
-            ? t("settings.about.hostsTransfer.importPartial", {
-                imported: outcome.imported,
-                failed: outcome.failed,
-              })
-            : t("settings.about.hostsTransfer.imported", { count: outcome.imported }),
-        );
+        let message: string;
+        if (outcome.imported === 0 && outcome.failed === 0) {
+          message = t("settings.about.hostsTransfer.emptyFile");
+        } else if (outcome.failed > 0) {
+          message = t("settings.about.hostsTransfer.importPartial", {
+            imported: outcome.imported,
+            failed: outcome.failed,
+          });
+        } else {
+          message = t("settings.about.hostsTransfer.imported", { count: outcome.imported });
+        }
+        toast.show(message);
       } catch {
         toast.error(t("settings.about.hostsTransfer.importError"));
       }

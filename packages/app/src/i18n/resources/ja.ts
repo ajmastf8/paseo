@@ -2249,6 +2249,8 @@ export const ja: TranslationResources = {
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
         exportedFile: "Saved {{count}} host(s) to a file",
+        importing: "Importing hosts…",
+        emptyFile: "That file had no hosts to import.",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
