@@ -2248,6 +2248,7 @@ export const ja: TranslationResources = {
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
+        exportedFile: "Saved {{count}} host(s) to a file",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
@@ -2263,6 +2264,7 @@ export const ja: TranslationResources = {
       updates: {
         label: "アプリの更新",
         readyToInstall: "インストール準備完了: {{version}}",
+        disabled: "Updates are disabled in this local build.",
         installTitle: "デスクトップの更新をインストール",
         installMessage: "このコンピューターのPaseoを更新します",
         installConfirm: "更新をインストール",

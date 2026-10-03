@@ -518,24 +518,38 @@ function ConnectedHostsSection({ clientVersion }: { clientVersion: string | null
   const { exportHosts, importHosts } = useHostTransfer();
 
   const handleExport = useCallback(() => {
-    void exportHosts()
-      .then((count) => toast.copied(t("settings.about.hostsTransfer.exported", { count })))
-      .catch((error) => toast.error(toErrorMessage(error)));
+    void (async () => {
+      try {
+        const outcome = await exportHosts();
+        if (outcome.kind === "cancelled") return;
+        toast.show(
+          outcome.kind === "file"
+            ? t("settings.about.hostsTransfer.exportedFile", { count: outcome.count })
+            : t("settings.about.hostsTransfer.exported", { count: outcome.count }),
+        );
+      } catch (error) {
+        toast.error(toErrorMessage(error));
+      }
+    })();
   }, [exportHosts, t, toast]);
 
   const handleImport = useCallback(() => {
-    void importHosts()
-      .then((result) =>
+    void (async () => {
+      try {
+        const outcome = await importHosts();
+        if (outcome.kind === "cancelled") return;
         toast.show(
-          result.failed > 0
+          outcome.failed > 0
             ? t("settings.about.hostsTransfer.importPartial", {
-                imported: result.imported,
-                failed: result.failed,
+                imported: outcome.imported,
+                failed: outcome.failed,
               })
-            : t("settings.about.hostsTransfer.imported", { count: result.imported }),
-        ),
-      )
-      .catch(() => toast.error(t("settings.about.hostsTransfer.importError")));
+            : t("settings.about.hostsTransfer.imported", { count: outcome.imported }),
+        );
+      } catch {
+        toast.error(t("settings.about.hostsTransfer.importError"));
+      }
+    })();
   }, [importHosts, t, toast]);
 
   return (
@@ -640,6 +654,7 @@ function DesktopAppUpdateRow() {
   const { settings, updateSettings } = useSettings();
   const {
     isDesktopApp,
+    updatesDisabled,
     statusText,
     availableUpdate,
     errorMessage,
@@ -733,6 +748,9 @@ function DesktopAppUpdateRow() {
       <View style={[settingsStyles.row, settingsStyles.rowBorder]}>
         <View style={settingsStyles.rowContent}>
           <Text style={settingsStyles.rowTitle}>{t("settings.about.updates.label")}</Text>
+          {updatesDisabled ? (
+            <Text style={settingsStyles.rowHint}>{t("settings.about.updates.disabled")}</Text>
+          ) : null}
           <Text style={settingsStyles.rowHint}>{statusText}</Text>
           {readyUpdateVersion ? (
             <Text style={settingsStyles.rowHint}>
@@ -748,7 +766,7 @@ function DesktopAppUpdateRow() {
             variant="outline"
             size="sm"
             onPress={handleCheckForUpdates}
-            disabled={isChecking || isInstalling}
+            disabled={updatesDisabled || isChecking || isInstalling}
           >
             {isChecking ? t("settings.about.updates.checking") : t("settings.about.updates.check")}
           </Button>
@@ -756,7 +774,7 @@ function DesktopAppUpdateRow() {
             variant="default"
             size="sm"
             onPress={handleInstallUpdate}
-            disabled={isChecking || isInstalling || !isUpdateReady}
+            disabled={updatesDisabled || isChecking || isInstalling || !isUpdateReady}
           >
             {getUpdateButtonLabel(t, isInstalling, readyUpdateVersion)}
           </Button>

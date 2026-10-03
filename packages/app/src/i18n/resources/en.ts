@@ -2353,6 +2353,7 @@ export const en = {
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
+        exportedFile: "Saved {{count}} host(s) to a file",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
@@ -2367,6 +2368,7 @@ export const en = {
       },
       updates: {
         label: "App updates",
+        disabled: "Updates are disabled in this local build.",
         readyToInstall: "Ready to install: {{version}}",
         installTitle: "Install desktop update",
         installMessage: "This updates Paseo on this computer",

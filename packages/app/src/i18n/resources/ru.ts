@@ -2266,6 +2266,7 @@ export const ru: TranslationResources = {
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
+        exportedFile: "Saved {{count}} host(s) to a file",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
@@ -2282,6 +2283,7 @@ export const ru: TranslationResources = {
       updates: {
         label: "Обновления приложения",
         readyToInstall: "Версия {{version}} готова к установке",
+        disabled: "Updates are disabled in this local build.",
         installTitle: "Установить обновление настольного приложения",
         installMessage: "Это обновит Paseo на этом компьютере.",
         installConfirm: "Установить обновление",

@@ -2204,6 +2204,7 @@ export const zhCN: TranslationResources = {
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
+        exportedFile: "Saved {{count}} host(s) to a file",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
@@ -2219,6 +2220,7 @@ export const zhCN: TranslationResources = {
       updates: {
         label: "应用更新",
         readyToInstall: "可安装：{{version}}",
+        disabled: "Updates are disabled in this local build.",
         installTitle: "安装桌面版更新",
         installMessage: "这会更新此电脑上的 Paseo",
         installConfirm: "安装更新",

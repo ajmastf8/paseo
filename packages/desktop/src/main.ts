@@ -45,6 +45,7 @@ import {
 import { setupDarwinCompositorWatchdog } from "./window/compositor-watchdog/index.js";
 import { resolveDesktopWindowChromeMode, windowChromeModeArgument } from "./window/chrome.js";
 import { registerDialogHandlers } from "./features/dialogs.js";
+import { registerFileHandlers } from "./features/files.js";
 import {
   registerNotificationHandlers,
   ensureNotificationCenterRegistration,
@@ -964,6 +965,7 @@ async function bootstrap(): Promise<void> {
   registerDaemonManager();
   registerWindowManager({ mode: DESKTOP_WINDOW_CHROME_MODE });
   registerDialogHandlers();
+  registerFileHandlers();
   registerNotificationHandlers();
   const openExternalUrl = createExternalUrlOpener({ open: shell.openExternal });
   ipcMain.handle("paseo:opener:openUrl", (_event, value: unknown) => openExternalUrl(value));

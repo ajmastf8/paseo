@@ -2281,6 +2281,7 @@ export const es: TranslationResources = {
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
+        exportedFile: "Saved {{count}} host(s) to a file",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
@@ -2296,6 +2297,7 @@ export const es: TranslationResources = {
       updates: {
         label: "Actualizaciones de aplicaciones",
         readyToInstall: "Listo para instalar:{{version}}",
+        disabled: "Updates are disabled in this local build.",
         installTitle: "Instalar actualización de escritorio",
         installMessage: "Esto actualizaPaseoen esta computadora.",
         installConfirm: "Instalar actualización",

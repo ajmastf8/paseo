@@ -172,6 +172,26 @@ export interface DesktopInvokeBridge {
   invoke?: (command: string, args?: Record<string, unknown>) => Promise<unknown>;
 }
 
+export interface DesktopFileFilter {
+  name: string;
+  extensions: string[];
+}
+
+export interface DesktopFilesBridge {
+  /** Save text via a native save dialog. Resolves to the path or null if cancelled. */
+  saveText?: (options: {
+    title?: string;
+    defaultFileName?: string;
+    content: string;
+    filters?: DesktopFileFilter[];
+  }) => Promise<string | null>;
+  /** Open a text file via a native open dialog. Resolves to null if cancelled. */
+  openText?: (options?: {
+    title?: string;
+    filters?: DesktopFileFilter[];
+  }) => Promise<{ path: string; content: string } | null>;
+}
+
 export interface DesktopHostBridge {
   platform?: string;
   windowChromeMode?: string;
@@ -181,6 +201,7 @@ export interface DesktopHostBridge {
   events?: DesktopEventsBridge;
   window?: DesktopWindowModuleBridge;
   dialog?: DesktopDialogBridge;
+  files?: DesktopFilesBridge;
   notification?: DesktopNotificationBridge;
   opener?: DesktopOpenerBridge;
   editor?: DesktopEditorBridge;

@@ -10,6 +10,7 @@ import {
 } from "@/desktop/updates/desktop-updates";
 import { useDesktopSettings } from "@/desktop/settings/desktop-settings";
 import { useDesktopIpcErrorReporter } from "@/desktop/hooks/desktop-ipc-error";
+import { APP_UPDATES_DISABLED } from "@/desktop/updates/update-availability";
 import {
   PENDING_RECHECK_MS,
   createDesktopAppUpdater,
@@ -22,6 +23,7 @@ export type { DesktopAppUpdateStatus };
 
 export interface UseDesktopAppUpdaterReturn {
   isDesktopApp: boolean;
+  updatesDisabled: boolean;
   status: DesktopAppUpdateStatus;
   statusText: string;
   availableUpdate: DesktopAppUpdateCheckResult | null;
@@ -63,7 +65,7 @@ export function useDesktopAppUpdater(): UseDesktopAppUpdaterReturn {
 
   const checkForUpdates = useCallback(
     async (options: { intent?: DesktopAppUpdateCheckIntent; silent?: boolean } = {}) => {
-      if (!isDesktopApp) {
+      if (!isDesktopApp || APP_UPDATES_DISABLED) {
         return null;
       }
       return updater.checkForUpdates({
@@ -76,21 +78,21 @@ export function useDesktopAppUpdater(): UseDesktopAppUpdaterReturn {
   );
 
   const installUpdate = useCallback(async () => {
-    if (!isDesktopApp) {
+    if (!isDesktopApp || APP_UPDATES_DISABLED) {
       return null;
     }
     return updater.installUpdate({ releaseChannel });
   }, [isDesktopApp, releaseChannel, updater]);
 
   useEffect(() => {
-    if (!isDesktopApp) {
+    if (!isDesktopApp || APP_UPDATES_DISABLED) {
       return;
     }
     void checkForUpdates({ intent: "automatic", silent: true });
   }, [checkForUpdates, isDesktopApp]);
 
   useEffect(() => {
-    if (!isDesktopApp || snapshot.status !== "pending") {
+    if (!isDesktopApp || APP_UPDATES_DISABLED || snapshot.status !== "pending") {
       return undefined;
     }
 
@@ -105,6 +107,7 @@ export function useDesktopAppUpdater(): UseDesktopAppUpdaterReturn {
 
   return {
     isDesktopApp,
+    updatesDisabled: APP_UPDATES_DISABLED,
     status: snapshot.status,
     statusText: formatStatusText({
       status: snapshot.status,

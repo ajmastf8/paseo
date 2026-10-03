@@ -86,6 +86,15 @@ contextBridge.exposeInMainWorld("paseoDesktop", {
       ipcRenderer.invoke("paseo:dialog:askWithCheckbox", message, options),
     open: (options?: Record<string, unknown>) => ipcRenderer.invoke("paseo:dialog:open", options),
   },
+  files: {
+    saveText: (options: Record<string, unknown>) =>
+      ipcRenderer.invoke("paseo:file:saveText", options) as Promise<string | null>,
+    openText: (options?: Record<string, unknown>) =>
+      ipcRenderer.invoke("paseo:file:openText", options) as Promise<{
+        path: string;
+        content: string;
+      } | null>,
+  },
   notification: {
     isSupported: () => ipcRenderer.invoke("paseo:notification:isSupported"),
     sendNotification: (payload: { title: string; body?: string; data?: Record<string, unknown> }) =>

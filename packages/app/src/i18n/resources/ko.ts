@@ -2240,6 +2240,7 @@ export const ko: TranslationResources = {
         export: "Export hosts",
         import: "Import hosts",
         exported: "Copied {{count}} host(s) to the clipboard",
+        exportedFile: "Saved {{count}} host(s) to a file",
         imported: "Imported {{count}} host(s)",
         importPartial: "Imported {{imported}} host(s); {{failed}} unreachable",
         importError: "Clipboard does not contain a Paseo hosts export",
@@ -2255,6 +2256,7 @@ export const ko: TranslationResources = {
       updates: {
         label: "앱 업데이트",
         readyToInstall: "설치 준비됨: {{version}}",
+        disabled: "Updates are disabled in this local build.",
         installTitle: "데스크톱 업데이트 설치",
         installMessage: "이 컴퓨터의 Paseo를 업데이트합니다",
         installConfirm: "업데이트 설치",
