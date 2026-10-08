@@ -502,6 +502,7 @@ intentionally unavailable to desktop updater clients.
 - The npm `version` lifecycle regenerates F-Droid changelog files from `CHANGELOG.md` for stable releases only (`npm run fdroid:changelogs`) and stages them, so the release tag carries them. Betas are a no-op. A stable run **aborts the release** if `CHANGELOG.md` has no entry for the version being cut — commit the changelog entry first. See [docs/android.md](android.md) for why these files are generated per ABI.
 - `release:prepare` refreshes workspace `node_modules` links to prevent stale types
 - `npm run dev:desktop` and `npm run build:desktop` target the Electron desktop package in `packages/desktop`
+- A local desktop build signs with a Developer ID when one is present, skipping notarization only when Apple credentials are absent; with no identity it signs ad-hoc and drops the hardened runtime. The runtime's library validation rejects an ad-hoc framework on macOS 27, which aborts the app in dyld at launch. See `packages/desktop/scripts/run-electron-builder.mjs`.
 - If `release:publish` partially fails, re-run it — npm skips already-published versions
 - If `release:publish:beta` partially fails, re-run it — npm skips already-published versions and keeps prereleases off `latest` because every publish uses `--tag beta`
 - The website uses GitHub's latest published release API for download links, so published beta prereleases do not replace the stable download target.
