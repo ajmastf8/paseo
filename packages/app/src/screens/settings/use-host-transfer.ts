@@ -46,7 +46,7 @@ export function useHostTransfer() {
           label: host.label,
           endpoint: connection.endpoint,
           useTls: Boolean(connection.useTls),
-          ...(connection.password ? { password: connection.password } : {}),
+          ...(host.password ? { password: host.password } : {}),
         });
       }
     }

@@ -78,6 +78,7 @@ export function buildSidebarProjection(input: SidebarProjectionInput): SidebarPr
         unpinnedWorkspaces,
         projectNamesByViewKey: input.projectNamesByViewKey,
         hostLabelsByServerId: input.hostLabelsByServerId,
+        t: input.t,
       })
     : [];
   // One switch decides both what the list groups by and what the keyboard shortcuts walk, so the

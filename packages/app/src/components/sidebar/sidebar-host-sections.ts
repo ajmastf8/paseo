@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import { buildStatusGroups } from "@/hooks/sidebar-status-view-model";
 import type {
   SidebarProjectEntry,
@@ -34,6 +35,7 @@ export function buildSidebarHostSections(input: {
   unpinnedWorkspaces: SidebarWorkspaceEntry[];
   projectNamesByViewKey: Map<string, string>;
   hostLabelsByServerId: ReadonlyMap<string, string>;
+  t: TFunction;
 }): SidebarHostSection[] {
   const serverIds = new Set<string>();
   for (const project of input.projects) {
@@ -60,6 +62,7 @@ export function buildSidebarHostSections(input: {
       buildStatusGroups(
         input.unpinnedWorkspaces.filter((workspace) => workspace.serverId === serverId),
         input.projectNamesByViewKey,
+        input.t,
       ),
     ),
   }));

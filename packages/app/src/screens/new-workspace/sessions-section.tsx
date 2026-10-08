@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ComponentType } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, Text, View, type PressableStateCallbackType } from "react-native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, type Href } from "expo-router";
@@ -9,7 +9,7 @@ import type {
   FetchRecentProviderSessionEntry,
 } from "@getpaseo/client/internal/daemon-client";
 import { History } from "lucide-react-native";
-import { getProviderIcon } from "@/components/provider-icons";
+import { useProviderIcon } from "@/components/provider-icons";
 import { getSessionTitle } from "@/components/import-session-sheet-view-model";
 import { useFetchQuery } from "@/data/query";
 import { formatTimeAgo } from "@/utils/time";
@@ -26,18 +26,6 @@ const PER_PROVIDER_LIMIT = 5;
 const ThemedHistory = withUnistyles(History, (theme) => ({
   color: theme.colors.foregroundMuted,
 }));
-
-const themedProviderIcons = new Map<string, ComponentType<{ size?: number }>>();
-
-function getThemedProviderIcon(providerId: string, serverId: string) {
-  const key = `${serverId}:${providerId}`;
-  const cached = themedProviderIcons.get(key);
-  if (cached) return cached;
-  const Base = getProviderIcon(providerId, serverId);
-  const Themed = withUnistyles(Base, (theme) => ({ color: theme.colors.foregroundMuted }));
-  themedProviderIcons.set(key, Themed);
-  return Themed;
-}
 
 type SessionsClient = Pick<DaemonClient, "fetchRecentProviderSessions" | "importAgent"> | null;
 
@@ -233,7 +221,11 @@ function SessionRow({
   onPress: (entry: FetchRecentProviderSessionEntry) => void;
 }) {
   const { t } = useTranslation();
-  const ProviderIcon = getThemedProviderIcon(entry.providerId, serverId);
+  const BaseProviderIcon = useProviderIcon(entry.providerId, serverId);
+  const ProviderIcon = useMemo(
+    () => withUnistyles(BaseProviderIcon, (theme) => ({ color: theme.colors.foregroundMuted })),
+    [BaseProviderIcon],
+  );
   const state = resolveRowState(entry);
   const handlePress = useCallback(() => onPress(entry), [entry, onPress]);
   const pressableStyle = useCallback(
